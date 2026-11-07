@@ -1,0 +1,172 @@
+/* Faith Engineers - Supplier Attendance Portal Custom Styles */
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-main: #0b1120;
+  --bg-card: #131d33;
+  --bg-card-hover: #1a2744;
+  --border-card: #203055;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-green: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
+}
+
+/* Base resets & typography */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Touch-optimized button and input controls for mobile */
+button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Pulsing badge for active checked-in workers */
+@keyframes pulse-live {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.08);
+  }
+}
+
+.pulse-working {
+  animation: pulse-live 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Worker selection checkbox card */
+.worker-card {
+  transition: all 0.18s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.worker-card:hover {
+  border-color: #3b82f6;
+  background-color: #1a2744;
+}
+
+.worker-card.selected {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.worker-card.already-in {
+  opacity: 0.65;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+/* Glassmorphism containers */
+.glass-panel {
+  background: rgba(19, 29, 51, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.glass-nav {
+  background: rgba(11, 17, 32, 0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Navigation active indicator */
+.nav-tab-btn.active {
+  color: #60a5fa;
+  border-bottom-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile bottom nav */
+.mobile-nav-item.active {
+  color: #60a5fa;
+}
+
+/* Mandatory badge styling */
+.badge-mandatory {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  font-size: 0.725rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Print styles for muster roll and attendance sheets */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  header, nav, #mobile-bottom-nav, .no-print, button, .btn-action {
+    display: none !important;
+  }
+  
+  .glass-panel, .bg-slate-900, .bg-slate-800, .bg-slate-950 {
+    background: #ffffff !important;
+    border: 1px solid #cccccc !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+  
+  table {
+    border-collapse: collapse;
+    width: 100% !important;
+  }
+  
+  th, td {
+    border: 1px solid #dddddd !important;
+    color: #000000 !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+  
+  th {
+    background-color: #f3f4f6 !important;
+  }
+  
+  .print-header {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+}
+

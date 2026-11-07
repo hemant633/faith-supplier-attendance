@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0b1120">
+  <meta name="description"
+    content="Faith Engineers Daily Supplier Attendance Marking Sheet & Manpower Management System">
+  <title>Faith Engineers - Daily Supplier Attendance</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SheetJS (XLSX) for Excel Export CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body
+  class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white pb-20 md:pb-6">
+
+  <!-- ======================================================================== -->
+  <!-- 1. LOGIN SECTION (VISIBLE WHEN LOGGED OUT) -->
+  <!-- ======================================================================== -->
+  <section id="login-section" class="flex-1 flex items-center justify-center p-4 sm:p-6 min-h-screen">
+    <div id="login-container" class="w-full">
+      <!-- Dynamically filled by App.renderLoginForm() -->
+    </div>
+  </section>
+
+  <!-- ======================================================================== -->
+  <!-- 2. MAIN APPLICATION SHELL (VISIBLE WHEN LOGGED IN) -->
+  <!-- ======================================================================== -->
+  <div id="app-shell" class="hidden flex-1 flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="glass-nav sticky top-0 z-40 px-4 sm:px-6 py-3 border-b border-slate-800">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+
+        <!-- Brand Title & Logo -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
+            <i data-lucide="building-2" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-extrabold uppercase tracking-widest text-blue-400">Faith Engineers</span>
+              <span id="supabase-realtime-badge"
+                class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Supabase
+              </span>
+            </div>
+            <h1 class="text-sm sm:text-base font-bold text-white tracking-tight leading-tight">Supplier Attendance
+              Portal</h1>
+          </div>
+        </div>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav
+          class="hidden md:flex items-center gap-1 bg-slate-900/80 p-1 rounded-2xl border border-slate-800 text-xs font-semibold">
+          <button type="button"
+            class="nav-tab-btn active px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5"
+            data-tab="attendance" onclick="App.switchTab('attendance')">
+            <i data-lucide="scan-line" class="w-4 h-4"></i> Attendance Marking
+          </button>
+          <button type="button"
+            class="nav-tab-btn px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-400 hover:text-white"
+            data-tab="dashboard" onclick="App.switchTab('dashboard')">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Monitoring Dashboard
+          </button>
+          <button type="button"
+            class="nav-tab-btn px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-slate-400 hover:text-white"
+            data-tab="reports" onclick="App.switchTab('reports')">
+            <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Reports & Billing
+          </button>
+            <button type="button"
+              class="nav-tab-btn px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5 text-purple-300 hover:text-white"
+              data-tab="masters" onclick="App.switchTab('masters')">
+              <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> Admin & Masters
+            </button>
+        </nav>
+
+        <!-- User Profile & Action Menu -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Supabase Config Button -->
+          <button type="button" onclick="App.openSupabaseConfigModal()" title="Supabase Credentials"
+            class="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all">
+            <i data-lucide="database" class="w-4 h-4"></i>
+          </button>
+
+          <!-- User Details Pill -->
+          <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-800">
+            <div class="text-right">
+              <p id="header-user-name" class="text-xs font-bold text-white truncate max-w-[140px]">Supervisor</p>
+              <p id="header-user-role" class="text-[10px] text-blue-400 font-mono font-semibold">SUPERVISOR</p>
+            </div>
+            <div id="header-user-avatar"
+              class="w-8 h-8 rounded-xl bg-blue-600/30 text-blue-300 border border-blue-500/40 flex items-center justify-center font-bold text-xs">
+              S
+            </div>
+          </div>
+
+          <!-- Logout Button -->
+          <button type="button" onclick="FaithAuth.logout()" title="Logout"
+            class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-900 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/30 transition-all flex items-center gap-1.5 text-xs font-semibold">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Logout</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+      <!-- 1. Attendance Marking Tab View -->
+      <section id="tab-attendance" class="tab-content-view">
+        <!-- Rendered by AttendanceModule.renderAttendanceView() -->
+      </section>
+
+      <!-- 2. Monitoring Dashboard Tab View -->
+      <section id="tab-dashboard" class="tab-content-view hidden">
+        <!-- Rendered by DashboardModule.renderDashboardView() -->
+      </section>
+
+      <!-- 3. Reports Tab View -->
+      <section id="tab-reports" class="tab-content-view hidden">
+        <!-- Rendered by ReportsModule.renderReportsView() -->
+      </section>
+
+      <!-- 4. Masters Management Tab View -->
+      <section id="tab-masters" class="tab-content-view hidden">
+        <!-- Rendered by MastersModule.renderMastersView() -->
+      </section>
+    </main>
+
+    <!-- Mobile Bottom Navigation (Visible on mobile/tablet screens) -->
+    <nav id="mobile-bottom-nav"
+      class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 flex items-center justify-around py-2 px-1">
+      <button type="button"
+        class="mobile-nav-item active flex flex-col items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white"
+        data-tab="attendance" onclick="App.switchTab('attendance')">
+        <i data-lucide="scan-line" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-semibold">Attendance</span>
+      </button>
+      <button type="button"
+        class="mobile-nav-item flex flex-col items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white"
+        data-tab="dashboard" onclick="App.switchTab('dashboard')">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-semibold">Dashboard</span>
+      </button>
+      <button type="button"
+        class="mobile-nav-item flex flex-col items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white"
+        data-tab="reports" onclick="App.switchTab('reports')">
+        <i data-lucide="bar-chart-3" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-semibold">Reports</span>
+      </button>
+      <button type="button"
+        class="mobile-nav-item flex flex-col items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-white"
+        data-tab="masters" onclick="App.switchTab('masters')">
+        <i data-lucide="shield-check" class="w-5 h-5 mb-0.5 text-purple-400"></i>
+        <span class="text-[10px] font-semibold">Admin Master</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- 3. GLOBAL MODAL DIALOG CONTAINER -->
+  <!-- ======================================================================== -->
+  <div id="app-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div class="glass-panel rounded-3xl p-6 shadow-2xl border border-slate-700 max-w-lg w-full relative">
+      <button type="button" onclick="App.closeModal()"
+        class="absolute top-4 right-4 text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-800 transition-all">
+        &times;
+      </button>
+      <div id="app-modal-body">
+        <!-- Injected via App.showModal(html) -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- 4. TOAST NOTIFICATION CONTAINER -->
+  <!-- ======================================================================== -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-auto">
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- 5. GLOBAL LOADING SPINNER -->
+  <!-- ======================================================================== -->
+  <div id="global-loader"
+    class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+      <p class="text-xs font-semibold text-slate-300">Processing live update...</p>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- 6. SCRIPTS -->
+  <!-- ======================================================================== -->
+  <script src="js/config.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/modules/attendance.js"></script>
+  <script src="js/modules/masters.js"></script>
+  <script src="js/modules/dashboard.js"></script>
+  <script src="js/modules/reports.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>
